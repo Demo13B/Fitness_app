@@ -1,11 +1,19 @@
+import { ApiProperty } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
 import { IsString, IsStrongPassword, MaxLength, MinLength } from "class-validator";
 
 export class UserDTO {
+    @ApiProperty({
+        default: 'test_user'
+    })
     @IsString()
     @MinLength(5)
     @MaxLength(20)
     username!: string;
 
+    @ApiProperty({
+        default: 'Password1'
+    })
     @IsStrongPassword({
         minLength: 8,
         minLowercase: 1,
