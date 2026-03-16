@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Expose } from "class-transformer";
-import { IsString, IsStrongPassword, MaxLength, MinLength } from "class-validator";
+import { IsEmail, IsNumber, IsString, IsStrongPassword, MaxLength, MinLength } from "class-validator";
 
 export class UserDTO {
     @ApiProperty({
@@ -22,4 +21,10 @@ export class UserDTO {
         minSymbols: 0
     })
     password!: string;
+
+    @ApiProperty({
+        default: 'example@email.com'
+    })
+    @IsEmail()
+    email!: string;
 }

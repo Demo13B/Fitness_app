@@ -1,8 +1,7 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UsePipes, ValidationPipe } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { UserDTO } from "./users.dto";
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiOkResponse } from "@nestjs/swagger";
-import { User } from "./users.entity";
 
 @Controller('users')
 export class UsersController {
@@ -22,4 +21,13 @@ export class UsersController {
     postUser(@Body() body: UserDTO) {
         return this.usersService.create(body);
     }
+
+    @UsePipes(ValidationPipe)
+    @Delete(':id')
+    @ApiOkResponse({ description: 'Operation result' })
+    async deleteUser(@Param('id') id: number) {
+        const result = await this.usersService.delete(id);
+        return { deleted: result.affected };
+    }
+
 }

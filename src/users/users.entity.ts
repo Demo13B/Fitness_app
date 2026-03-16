@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "ty
 
 @Entity({ name: 'profiles' })
 export class Profile {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('identity')
     id!: number
 
     @Column({ nullable: false })
@@ -23,7 +23,7 @@ export class Profile {
 
 @Entity({ name: 'users' })
 export class User {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('identity')
     id!: number;
 
     @Column({ nullable: false, unique: true })
@@ -31,6 +31,9 @@ export class User {
 
     @Column({ nullable: false })
     password_hash!: string;
+
+    @Column({ nullable: false })
+    email!: string;
 
     @Column({ type: 'timestamp' })
     registered_at!: Date;

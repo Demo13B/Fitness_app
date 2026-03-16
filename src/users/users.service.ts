@@ -26,8 +26,13 @@ export class UsersService {
         const newUser = this.userRepository.create({
             username: user.username,
             password_hash: hash,
-            registered_at: new Date()
+            registered_at: new Date(),
+            email: user.email
         });
         return this.userRepository.save(newUser);
+    }
+
+    delete(user_id: number) {
+        return this.userRepository.delete({ id: user_id })
     }
 }
