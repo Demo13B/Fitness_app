@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNumber, IsString, IsStrongPassword, MaxLength, MinLength } from "class-validator";
+import { IsDateString, IsEmail, IsIn, IsNumber, IsString, IsStrongPassword, Max, MaxLength, Min, MinLength } from "class-validator";
 
 export class UserDTO {
     @ApiProperty({
@@ -27,4 +27,40 @@ export class UserDTO {
     })
     @IsEmail()
     email!: string;
+}
+
+export class ProfileDTO {
+    @ApiProperty({
+        default: 'male'
+    })
+    @IsIn(['male', 'female'])
+    gender!: string
+
+    @ApiProperty({
+        default: 175
+    })
+    @IsNumber()
+    @Min(100)
+    @Max(300)
+    height!: number;
+
+    @ApiProperty({
+        default: 75
+    })
+    @IsNumber()
+    @Min(40)
+    @Max(300)
+    weight!: number;
+
+    @ApiProperty({
+        default: new Date
+    })
+    @IsDateString()
+    birth_date!: Date
+
+    @ApiProperty({
+        default: 'Medical data'
+    })
+    @IsString()
+    medical_record!: string;
 }

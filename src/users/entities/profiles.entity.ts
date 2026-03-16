@@ -1,4 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "./users.entity";
 
 @Entity({ name: 'profiles' })
 export class Profile {
@@ -9,36 +10,14 @@ export class Profile {
     gender!: string;
 
     @Column({ nullable: false })
-    height!: string;
+    height!: number;
 
     @Column({ nullable: false })
-    weight!: string;
+    weight!: number;
 
     @Column({ type: 'timestamp', nullable: false })
     birth_date!: Date
 
     @Column({ type: 'text', nullable: false })
     medical_record!: string
-}
-
-@Entity({ name: 'users' })
-export class User {
-    @PrimaryGeneratedColumn('identity')
-    id!: number;
-
-    @Column({ nullable: false, unique: true })
-    username!: string;
-
-    @Column({ nullable: false })
-    password_hash!: string;
-
-    @Column({ nullable: false })
-    email!: string;
-
-    @Column({ type: 'timestamp' })
-    registered_at!: Date;
-
-    @OneToOne(() => Profile)
-    @JoinColumn()
-    profile!: Profile;
 }
