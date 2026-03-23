@@ -14,9 +14,7 @@ export class RedisService {
         });
 
         this.client.on('error', () => { });
-        this.client.on('connect', () => {
-            console.log(`Connected to Redis at: ${config.get('REDIS_HOST', 'localhost')}`);
-        });
+        console.log(`Connected to Redis at: ${config.get('REDIS_HOST', 'localhost')}`);
     }
 
     async set(key: string, value: string, ttl: number) {
