@@ -10,6 +10,9 @@ export class User {
     username!: string;
 
     @Column({ nullable: false })
+    role!: string;
+
+    @Column({ nullable: false })
     password_hash!: string;
 
     @Column({ nullable: false })

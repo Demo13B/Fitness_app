@@ -11,6 +11,7 @@ import { Profile } from "./entities/profiles.entity";
         TypeOrmModule.forFeature([User, Profile]),
     ],
     controllers: [UsersController],
-    providers: [UsersService, HasherService]
+    providers: [UsersService, HasherService],
+    exports: [UsersService]
 })
 export class UsersModule { }

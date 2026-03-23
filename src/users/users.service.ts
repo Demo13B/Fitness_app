@@ -28,6 +28,7 @@ export class UsersService {
         const hash = await this.hasherService.getHash(user.password);
         const newUser = this.userRepository.create({
             username: user.username,
+            role: user.role,
             password_hash: hash,
             registered_at: new Date(),
             email: user.email

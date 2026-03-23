@@ -11,6 +11,12 @@ export class UserDTO {
     username!: string;
 
     @ApiProperty({
+        default: 'admin'
+    })
+    @IsIn(['user', 'admin'])
+    role!: string;
+
+    @ApiProperty({
         default: 'Password1'
     })
     @IsStrongPassword({
