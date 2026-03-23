@@ -2,6 +2,7 @@ import { Controller, Post, Body, HttpException, HttpStatus, UsePipes, Validation
 import { UserDTO } from "src/users/users.dto";
 import { AuthService } from "./auth.service";
 import { ApiBadRequestResponse, ApiCreatedResponse } from "@nestjs/swagger";
+import { LoginDTO } from "./auth.dto";
 
 @Controller('auth')
 export class AuthController {
@@ -17,5 +18,12 @@ export class AuthController {
             throw new HttpException("Can't register admin", HttpStatus.BAD_REQUEST);
 
         return this.authService.create(body);
+    }
+
+    @UsePipes(ValidationPipe)
+    @Post('login')
+    @HttpCode(HttpStatus.CREATED)
+    login(@Body() body: LoginDTO) {
+        return this.authService.login(body);
     }
 }

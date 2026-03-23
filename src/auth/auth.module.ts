@@ -4,9 +4,21 @@ import { AuthService } from "./auth.service";
 import { UsersModule } from "src/users/users.module";
 import { RedisModule } from "src/redis/redis.module";
 import { JwtModule } from "@nestjs/jwt";
+import { HasherModule } from "src/hasher/hasher.module";
+import { ConfigService } from "@nestjs/config";
 
 @Module({
-    imports: [UsersModule, RedisModule, JwtModule],
+    imports: [
+        UsersModule,
+        RedisModule,
+        JwtModule.registerAsync({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                secret: config.get('JWT_SECRET', 'secret')
+            })
+        }),
+        HasherModule
+    ],
     controllers: [AuthController],
     providers: [AuthService]
 })
