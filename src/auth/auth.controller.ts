@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpException, HttpStatus, UsePipes, ValidationPipe, HttpCode, Res } from "@nestjs/common";
+import { Controller, Post, Body, HttpException, HttpStatus, UsePipes, ValidationPipe, HttpCode, Res, Get, Param } from "@nestjs/common";
 import { UserDTO } from "src/users/users.dto";
 import { AuthService } from "./auth.service";
 import { ApiBadRequestResponse, ApiCreatedResponse } from "@nestjs/swagger";
@@ -36,5 +36,15 @@ export class AuthController {
             sameSite: 'strict',
             secure: true
         });
+
+        return tokens;
+    }
+
+    @UsePipes(ValidationPipe)
+    @Get('logout/:id')
+    logout(@Param('id') user_id: number, @Res({ passthrough: true }) res: Response) {
+        res.clearCookie('access_token');
+        res.clearCookie('refresh_token');
+        this.authService.logout(user_id);
     }
 }

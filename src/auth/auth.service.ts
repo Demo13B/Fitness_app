@@ -36,8 +36,13 @@ export class AuthService {
         const access_token = this.jwtService.sign(payload, { expiresIn: '15m' });
         const refresh_token = this.jwtService.sign(payload, { expiresIn: '7d' });
 
-        await this.redisService.set(`refresh:${user.id}`, refresh_token, 7 * 24 * 60 * 60);
+        const hashed = await this.hasherService.getHash(refresh_token);
+        await this.redisService.set(`refresh:${user.id}`, hashed, 7 * 24 * 60 * 60);
 
         return { access_token, refresh_token };
+    }
+
+    logout(user_id: number) {
+        return this.redisService.delete(`refresh:${user_id}`);
     }
 }
