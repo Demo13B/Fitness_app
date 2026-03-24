@@ -42,7 +42,34 @@ export class AuthService {
         return { access_token, refresh_token };
     }
 
-    logout(user_id: number) {
-        return this.redisService.delete(`refresh:${user_id}`);
+    async refresh(refresh_token: string) {
+        const payload = this.jwtService.verify(refresh_token);
+        const redisState = await this.redisService.get(`refresh:${payload.user_id}`);
+
+        if (!redisState)
+            throw new HttpException('Refresh token expired', HttpStatus.UNAUTHORIZED);
+
+        const confirm = await this.hasherService.compareHash(refresh_token, redisState);
+
+        if (!confirm)
+            throw new HttpException('Refresh token is invalid', HttpStatus.UNAUTHORIZED);
+
+        const new_payload = {
+            user_id: payload.user_id,
+            role: payload.role
+        }
+
+        const new_access_token = this.jwtService.sign(new_payload, { expiresIn: '15m' });
+        const new_refresh_token = this.jwtService.sign(new_payload, { expiresIn: '7d' });
+
+        const hashed = await this.hasherService.getHash(new_refresh_token);
+        await this.redisService.set(`refresh:${payload.user_id}`, hashed, 7 * 24 * 60 * 60);
+
+        return { new_access_token, new_refresh_token };
+    }
+
+    logout(access_token: string) {
+        const payload = this.jwtService.verify(access_token);
+        return this.redisService.delete(`refresh:${payload.user_id}`);
     }
 }

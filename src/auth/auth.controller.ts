@@ -1,9 +1,9 @@
-import { Controller, Post, Body, HttpException, HttpStatus, UsePipes, ValidationPipe, HttpCode, Res, Get, Param } from "@nestjs/common";
+import { Controller, Post, Body, HttpException, HttpStatus, UsePipes, ValidationPipe, HttpCode, Res, Get, Req } from "@nestjs/common";
 import { UserDTO } from "src/users/users.dto";
 import { AuthService } from "./auth.service";
 import { ApiBadRequestResponse, ApiCreatedResponse } from "@nestjs/swagger";
 import { LoginDTO } from "./auth.dto";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 
 @Controller('auth')
 export class AuthController {
@@ -40,11 +40,34 @@ export class AuthController {
         return tokens;
     }
 
-    @UsePipes(ValidationPipe)
-    @Get('logout/:id')
-    logout(@Param('id') user_id: number, @Res({ passthrough: true }) res: Response) {
+    @Post('refresh')
+    @HttpCode(HttpStatus.CREATED)
+    async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+        if (!req.cookies.refresh_token)
+            throw new HttpException('No token recieved', HttpStatus.UNAUTHORIZED);
+
+        const tokens = await this.authService.refresh(req.cookies.refresh_token);
+        res.cookie('access_token', tokens.new_access_token, {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: true
+        });
+        res.cookie('refresh_token', tokens.new_refresh_token, {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: true
+        });
+
+        return tokens;
+    }
+
+    @Post('logout')
+    logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+        if (!req.cookies.access_token)
+            return;
+
+        this.authService.logout(req.cookies.access_token);
         res.clearCookie('access_token');
         res.clearCookie('refresh_token');
-        this.authService.logout(user_id);
     }
 }
