@@ -1,9 +1,10 @@
-import { Controller, Post, Body, HttpException, HttpStatus, UsePipes, ValidationPipe, HttpCode, Res, Get, Req } from "@nestjs/common";
+import { Controller, Post, Body, HttpException, HttpStatus, UsePipes, ValidationPipe, Res, Req, UseGuards } from "@nestjs/common";
 import { UserDTO } from "src/users/users.dto";
 import { AuthService } from "./auth.service";
 import { ApiBadRequestResponse, ApiCreatedResponse } from "@nestjs/swagger";
 import { LoginDTO } from "./auth.dto";
 import type { Request, Response } from "express";
+import { RefreshGuard } from "./guards/refresh.guard";
 
 @Controller('auth')
 export class AuthController {
@@ -11,7 +12,6 @@ export class AuthController {
 
     @UsePipes(ValidationPipe)
     @Post('register')
-    @HttpCode(HttpStatus.CREATED)
     @ApiCreatedResponse({ description: 'Created user data' })
     @ApiBadRequestResponse({ description: 'Validation errors or admin role' })
     registerUser(@Body() body: UserDTO) {
@@ -23,7 +23,6 @@ export class AuthController {
 
     @UsePipes(ValidationPipe)
     @Post('login')
-    @HttpCode(HttpStatus.CREATED)
     async login(@Body() body: LoginDTO, @Res({ passthrough: true }) res: Response) {
         const tokens = await this.authService.login(body);
         res.cookie('access_token', tokens.access_token, {
@@ -40,12 +39,9 @@ export class AuthController {
         return tokens;
     }
 
+    @UseGuards(RefreshGuard)
     @Post('refresh')
-    @HttpCode(HttpStatus.CREATED)
     async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-        if (!req.cookies.refresh_token)
-            throw new HttpException('No token recieved', HttpStatus.UNAUTHORIZED);
-
         const tokens = await this.authService.refresh(req.cookies.refresh_token);
         res.cookie('access_token', tokens.new_access_token, {
             httpOnly: true,
