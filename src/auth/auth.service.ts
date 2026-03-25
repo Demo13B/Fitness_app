@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { UserDTO } from "src/users/users.dto";
 import { UsersService } from "src/users/users.service";
-import { LoginDTO } from "./auth.dto";
+import { LoginDTO, RegisterDTO } from "./auth.dto";
 import { RedisService } from "src/redis/redis.service";
 import { JwtService } from "@nestjs/jwt";
 import { HasherService } from "src/hasher/hasher.service";
@@ -15,7 +15,13 @@ export class AuthService {
         private readonly hasherService: HasherService
     ) { }
 
-    create(user: UserDTO) {
+    create(regForm: RegisterDTO) {
+        const user: UserDTO = {
+            username: regForm.username,
+            password: regForm.password,
+            role: 'user',
+            email: regForm.email
+        };
         return this.usersService.create(user);
     }
 
@@ -68,8 +74,12 @@ export class AuthService {
         return { new_access_token, new_refresh_token };
     }
 
-    logout(access_token: string) {
-        const payload = this.jwtService.verify(access_token);
-        return this.redisService.delete(`refresh:${payload.user_id}`);
+    logout(refresh_token: string) {
+        try {
+            const payload = this.jwtService.verify(refresh_token);
+            this.redisService.delete(`refresh:${payload.user_id}`);
+        } catch {
+            return;
+        }
     }
 }
