@@ -5,11 +5,13 @@ import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
 import { Profile } from "./entities/profiles.entity";
 import { HasherModule } from "src/hasher/hasher.module";
+import { GuardsModule } from "src/guards/guards.module";
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([User, Profile]),
-        HasherModule
+        HasherModule,
+        GuardsModule
     ],
     controllers: [UsersController],
     providers: [UsersService],

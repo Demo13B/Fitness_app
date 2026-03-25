@@ -1,18 +1,21 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { ProfileDTO, UserDTO } from "./users.dto";
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse } from "@nestjs/swagger";
+import { AuthGuard } from "src/guards/auth.guard";
 
 @Controller('users')
 export class UsersController {
     constructor(private usersService: UsersService) { }
 
+    @UseGuards(AuthGuard)
     @Get()
     @ApiOkResponse({ description: 'A list of all users' })
     getAll() {
         return this.usersService.readAll();
     }
 
+    @UseGuards(AuthGuard)
     @UsePipes(ValidationPipe)
     @Post()
     @HttpCode(HttpStatus.CREATED)
@@ -22,6 +25,7 @@ export class UsersController {
         return this.usersService.create(body);
     }
 
+    @UseGuards(AuthGuard)
     @UsePipes(ValidationPipe)
     @Post(':id/profile')
     @HttpCode(HttpStatus.CREATED)
@@ -35,6 +39,7 @@ export class UsersController {
         return this.usersService.createProfile(user_id, body);
     }
 
+    @UseGuards(AuthGuard)
     @Delete(':id')
     @ApiOkResponse({ description: 'Operation result' })
     async deleteUser(@Param('id') id: number) {

@@ -4,7 +4,7 @@ import { AuthService } from "./auth.service";
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { LoginDTO, RegisterDTO } from "./auth.dto";
 import type { Request, Response } from "express";
-import { RefreshGuard } from "./guards/refresh.guard";
+import { RefreshGuard } from "../guards/refresh.guard";
 
 @Controller('auth')
 export class AuthController {
