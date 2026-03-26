@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Put, Req, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Put, Req, Res, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { ProfileDTO, UserDTO, UserPatchDTO, UserPatchSelfDTO } from "./users.dto";
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse } from "@nestjs/swagger";
 import { AuthGuard } from "src/guards/auth.guard";
 import { AdminGuard } from "src/guards/admin.guard";
 import type { RequestWithUser } from "src/interfaces/request.interface";
+import type { Response } from "express";
 
 @Controller('users')
 export class UsersController {
@@ -82,6 +83,19 @@ export class UsersController {
         @Body() body: ProfileDTO
     ) {
         return this.usersService.updateProfile(user_id, body);
+    }
+
+    @UseGuards(AuthGuard)
+    @UsePipes(ValidationPipe)
+    @Delete('self')
+    async deleteSelf(
+        @Req() req: RequestWithUser,
+        @Res({ passthrough: true }) res: Response
+    ) {
+        const result = this.usersService.delete(req.user.user_id);
+        res.clearCookie('access_token');
+        res.clearCookie('refresh_token');
+        return { deleted: (await result).affected }
     }
 
     @UseGuards(AuthGuard, AdminGuard)
