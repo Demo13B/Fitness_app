@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Put, Req, Res, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { ProfileDTO, UserDTO, UserPatchDTO, UserPatchSelfDTO } from "./users.dto";
-import { ApiBadRequestResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse } from "@nestjs/swagger";
+import { ApiBadRequestResponse, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { AuthGuard } from "src/guards/auth.guard";
 import { AdminGuard } from "src/guards/admin.guard";
 import type { RequestWithUser } from "src/interfaces/request.interface";
@@ -14,18 +14,25 @@ export class UsersController {
     @UseGuards(AuthGuard, AdminGuard)
     @Get()
     @ApiOkResponse({ description: 'A list of all users' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
+    @ApiForbiddenResponse({ description: 'Access rights mismatch' })
     getAll() {
         return this.usersService.readAll();
     }
 
     @UseGuards(AuthGuard)
     @Get('self')
+    @ApiOkResponse({ description: 'Self user data' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
     getMe(@Req() req: RequestWithUser) {
         return this.usersService.readById(req.user.user_id);
     }
 
     @UseGuards(AuthGuard, AdminGuard)
     @Get(':id')
+    @ApiOkResponse({ description: 'Requested user data' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
+    @ApiForbiddenResponse({ description: 'Access rights mismatch' })
     async getById(@Param('id') id: number) {
         const user = await this.usersService.readById(id);
         if (!user)
@@ -36,16 +43,20 @@ export class UsersController {
     @UseGuards(AuthGuard, AdminGuard)
     @UsePipes(ValidationPipe)
     @Post()
-    @HttpCode(HttpStatus.CREATED)
     @ApiCreatedResponse({ description: 'Created user data' })
     @ApiBadRequestResponse({ description: 'Validation errors or username already exists' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
+    @ApiForbiddenResponse({ description: 'Access rights mismatch' })
     postUser(@Body() body: UserDTO) {
         return this.usersService.create(body);
     }
 
     @UseGuards(AuthGuard)
     @UsePipes(ValidationPipe)
-    @Post('self')
+    @Post('self/profile')
+    @ApiCreatedResponse({ description: 'Self updated user data' })
+    @ApiBadRequestResponse({ description: 'Validation errors or profile already exists' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
     postSelfProfile(
         @Req() req: RequestWithUser,
         @Body() body: ProfileDTO
@@ -56,9 +67,10 @@ export class UsersController {
     @UseGuards(AuthGuard, AdminGuard)
     @UsePipes(ValidationPipe)
     @Post(':id/profile')
-    @HttpCode(HttpStatus.CREATED)
     @ApiOkResponse({ description: 'Created profile data' })
     @ApiNotFoundResponse({ description: 'User does not exist' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
+    @ApiForbiddenResponse({ description: 'Access rights mismatch' })
     @ApiBadRequestResponse({ description: 'Validation errors or user already has profile' })
     postProfile(
         @Param('id') user_id: number,
@@ -70,6 +82,9 @@ export class UsersController {
     @UseGuards(AuthGuard)
     @UsePipes(ValidationPipe)
     @Patch('self')
+    @ApiOkResponse({ description: 'Patched self user data' })
+    @ApiBadRequestResponse({ description: 'Validation failed' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
     patchSelf(
         @Req() req: RequestWithUser,
         @Body() body: UserPatchSelfDTO
@@ -80,6 +95,11 @@ export class UsersController {
     @UseGuards(AuthGuard, AdminGuard)
     @UsePipes(ValidationPipe)
     @Patch(':id')
+    @ApiOkResponse({ description: 'Patched requested user data' })
+    @ApiBadRequestResponse({ description: 'Validation failed' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
+    @ApiForbiddenResponse({ description: 'Access rights mismatch' })
+    @ApiNotFoundResponse({ description: 'User not found' })
     patchUser(@Param('id') id: number, @Body() body: UserPatchDTO) {
         return this.usersService.update(id, body);
     }
@@ -87,6 +107,10 @@ export class UsersController {
     @UseGuards(AuthGuard)
     @UsePipes(ValidationPipe)
     @Put('self/profile')
+    @ApiOkResponse({ description: 'Seld updated user data' })
+    @ApiBadRequestResponse({ description: 'Validation failed' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
+    @ApiForbiddenResponse({ description: 'Access rights mismatch' })
     putSelfProfile(
         @Req() req: RequestWithUser,
         @Body() body: ProfileDTO
@@ -97,6 +121,11 @@ export class UsersController {
     @UseGuards(AuthGuard, AdminGuard)
     @UsePipes(ValidationPipe)
     @Put(':id/profile')
+    @ApiOkResponse({ description: 'Updated requested user data' })
+    @ApiNotFoundResponse({ description: 'User does not exist' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
+    @ApiForbiddenResponse({ description: 'Access rights mismatch' })
+    @ApiBadRequestResponse({ description: 'Validation errors' })
     putProfile(
         @Param('id') user_id: number,
         @Body() body: ProfileDTO
@@ -106,6 +135,8 @@ export class UsersController {
 
     @UseGuards(AuthGuard)
     @Delete('self')
+    @ApiOkResponse({ description: 'Operation result' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
     async deleteSelf(
         @Req() req: RequestWithUser,
         @Res({ passthrough: true }) res: Response
@@ -119,6 +150,8 @@ export class UsersController {
     @UseGuards(AuthGuard, AdminGuard)
     @Delete(':id')
     @ApiOkResponse({ description: 'Operation result' })
+    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
+    @ApiForbiddenResponse({ description: 'Access rights mismatch' })
     async deleteUser(@Param('id') id: number) {
         const result = await this.usersService.delete(id);
         return { deleted: result.affected }
