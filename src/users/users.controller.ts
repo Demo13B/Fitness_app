@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Put, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Put, Req, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { ProfileDTO, UserDTO, UserPatchDTO } from "./users.dto";
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse } from "@nestjs/swagger";
 import { AuthGuard } from "src/guards/auth.guard";
 import { AdminGuard } from "src/guards/admin.guard";
+import type { RequestWithUser } from "src/interfaces/request.interface";
 
 @Controller('users')
 export class UsersController {
@@ -14,6 +15,12 @@ export class UsersController {
     @ApiOkResponse({ description: 'A list of all users' })
     getAll() {
         return this.usersService.readAll();
+    }
+
+    @UseGuards(AuthGuard)
+    @Get('me')
+    getMe(@Req() req: RequestWithUser) {
+        return this.usersService.readById(req.user.user_id);
     }
 
     @UseGuards(AuthGuard, AdminGuard)
