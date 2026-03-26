@@ -12,11 +12,21 @@ export class UsersService {
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
         @InjectRepository(Profile) private profileRepository: Repository<Profile>,
-        private hasherService: HasherService
+        private readonly hasherService: HasherService
     ) { }
 
     readAll() {
         return this.userRepository.find({ relations: ['profile'] });
+    }
+
+    readById(user_id: number) {
+        const user = this.userRepository.findOneBy({ id: user_id });
+        return user;
+    }
+
+    readByUsername(username: string) {
+        const user = this.userRepository.findOneBy({ username: username });
+        return user;
     }
 
     async create(user: UserDTO) {
@@ -28,6 +38,7 @@ export class UsersService {
         const hash = await this.hasherService.getHash(user.password);
         const newUser = this.userRepository.create({
             username: user.username,
+            role: user.role,
             password_hash: hash,
             registered_at: new Date(),
             email: user.email
