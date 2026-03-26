@@ -43,6 +43,16 @@ export class UsersController {
         return this.usersService.create(body);
     }
 
+    @UseGuards(AuthGuard)
+    @UsePipes(ValidationPipe)
+    @Post('self')
+    postSelfProfile(
+        @Req() req: RequestWithUser,
+        @Body() body: ProfileDTO
+    ) {
+        return this.usersService.createProfile(req.user.user_id, body);
+    }
+
     @UseGuards(AuthGuard, AdminGuard)
     @UsePipes(ValidationPipe)
     @Post(':id/profile')
@@ -56,7 +66,6 @@ export class UsersController {
     ) {
         return this.usersService.createProfile(user_id, body);
     }
-
 
     @UseGuards(AuthGuard)
     @UsePipes(ValidationPipe)
@@ -75,6 +84,16 @@ export class UsersController {
         return this.usersService.update(id, body);
     }
 
+    @UseGuards(AuthGuard)
+    @UsePipes(ValidationPipe)
+    @Put('self/profile')
+    putSelfProfile(
+        @Req() req: RequestWithUser,
+        @Body() body: ProfileDTO
+    ) {
+        return this.usersService.updateProfile(req.user.user_id, body);
+    }
+
     @UseGuards(AuthGuard, AdminGuard)
     @UsePipes(ValidationPipe)
     @Put(':id/profile')
@@ -86,7 +105,6 @@ export class UsersController {
     }
 
     @UseGuards(AuthGuard)
-    @UsePipes(ValidationPipe)
     @Delete('self')
     async deleteSelf(
         @Req() req: RequestWithUser,
