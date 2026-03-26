@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, HttpException, Injectable, NotFoundException, HttpStatus } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./entities/users.entity";
 import { Repository } from "typeorm";
-import { ProfileDTO, UserDTO } from "./users.dto";
+import { ProfileDTO, UserDTO, UserPatchDTO, UserPatchSelfDTO } from "./users.dto";
 import { HasherService } from "src/hasher/hasher.service";
 import { Profile } from "./entities/profiles.entity";
 import { DeleteResult } from "typeorm/browser";
@@ -20,7 +20,12 @@ export class UsersService {
     }
 
     readById(user_id: number) {
-        const user = this.userRepository.findOneBy({ id: user_id });
+        const user = this.userRepository.findOne({
+            where: { id: user_id },
+            relations: {
+                profile: true
+            }
+        });
         return user;
     }
 
@@ -60,6 +65,50 @@ export class UsersService {
 
         const newProfile = this.profileRepository.create(profile);
         user.profile = newProfile;
+
+        return this.userRepository.save(user);
+    }
+
+    async update(user_id: number, new_data: UserPatchDTO) {
+        const user = await this.userRepository.findOneBy({ id: user_id });
+        if (!user)
+            throw new HttpException('No such user exists', HttpStatus.NOT_FOUND);
+
+        user.email = new_data.email;
+        user.password_hash = await this.hasherService.getHash(new_data.password);
+        user.role = new_data.role;
+
+        return this.userRepository.save(user);
+    }
+
+    async updateSelf(user_id: number, new_data: UserPatchSelfDTO) {
+        const user = await this.userRepository.findOneBy({ id: user_id });
+        if (!user)
+            throw new HttpException('No such user exists', HttpStatus.NOT_FOUND);
+
+        user.email = new_data.email;
+        user.password_hash = await this.hasherService.getHash(new_data.password);
+
+        return this.userRepository.save(user);
+    }
+
+    async updateProfile(user_id: number, new_data: ProfileDTO) {
+        const user = await this.userRepository.findOne({
+            where: { id: user_id },
+            relations: {
+                profile: true
+            }
+        })
+
+        if (!user)
+            throw new HttpException('No such user exists', HttpStatus.NOT_FOUND);
+
+        if (!user.profile) {
+            user.profile = this.profileRepository.create(new_data);
+        } else {
+            const id = user.profile.id;
+            user.profile = { id, ...new_data };
+        }
 
         return this.userRepository.save(user);
     }

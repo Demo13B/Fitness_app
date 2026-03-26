@@ -35,6 +35,34 @@ export class UserDTO {
     email!: string;
 }
 
+export class UserPatchSelfDTO {
+    @ApiProperty({
+        default: 'Password1'
+    })
+    @IsStrongPassword({
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 0
+    })
+    password!: string;
+
+    @ApiProperty({
+        default: 'example@email.com'
+    })
+    @IsEmail()
+    email!: string;
+}
+
+export class UserPatchDTO extends UserPatchSelfDTO {
+    @ApiProperty({
+        default: 'admin'
+    })
+    @IsIn(['user', 'admin'])
+    role!: string;
+}
+
 export class ProfileDTO {
     @ApiProperty({
         default: 'male'

@@ -13,7 +13,7 @@ export class AuthController {
     @UsePipes(ValidationPipe)
     @Post('register')
     @ApiCreatedResponse({ description: 'Created user data' })
-    @ApiBadRequestResponse({ description: 'Validation errors or admin role' })
+    @ApiBadRequestResponse({ description: 'Validation errors' })
     registerUser(@Body() body: RegisterDTO) {
         return this.authService.create(body);
     }
