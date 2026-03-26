@@ -6,7 +6,6 @@ import { ProfileDTO, UserDTO, UserPatchDTO } from "./users.dto";
 import { HasherService } from "src/hasher/hasher.service";
 import { Profile } from "./entities/profiles.entity";
 import { DeleteResult } from "typeorm/browser";
-import { throws } from "assert";
 
 @Injectable()
 export class UsersService {
@@ -21,7 +20,12 @@ export class UsersService {
     }
 
     readById(user_id: number) {
-        const user = this.userRepository.findOneBy({ id: user_id });
+        const user = this.userRepository.findOne({
+            where: { id: user_id },
+            relations: {
+                profile: true
+            }
+        });
         return user;
     }
 

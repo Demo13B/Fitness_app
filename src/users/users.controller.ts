@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Put, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { ProfileDTO, UserDTO, UserPatchDTO } from "./users.dto";
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse } from "@nestjs/swagger";
@@ -14,6 +14,15 @@ export class UsersController {
     @ApiOkResponse({ description: 'A list of all users' })
     getAll() {
         return this.usersService.readAll();
+    }
+
+    @UseGuards(AuthGuard, AdminGuard)
+    @Get(':id')
+    async getById(@Param('id') id: number) {
+        const user = await this.usersService.readById(id);
+        if (!user)
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        return user;
     }
 
     @UseGuards(AuthGuard, AdminGuard)
