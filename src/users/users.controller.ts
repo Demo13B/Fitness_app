@@ -3,19 +3,20 @@ import { UsersService } from "./users.service";
 import { ProfileDTO, UserDTO } from "./users.dto";
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse } from "@nestjs/swagger";
 import { AuthGuard } from "src/guards/auth.guard";
+import { AdminGuard } from "src/guards/admin.guard";
 
 @Controller('users')
 export class UsersController {
     constructor(private usersService: UsersService) { }
 
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, AdminGuard)
     @Get()
     @ApiOkResponse({ description: 'A list of all users' })
     getAll() {
         return this.usersService.readAll();
     }
 
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, AdminGuard)
     @UsePipes(ValidationPipe)
     @Post()
     @HttpCode(HttpStatus.CREATED)
@@ -25,7 +26,7 @@ export class UsersController {
         return this.usersService.create(body);
     }
 
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, AdminGuard)
     @UsePipes(ValidationPipe)
     @Post(':id/profile')
     @HttpCode(HttpStatus.CREATED)
@@ -39,7 +40,7 @@ export class UsersController {
         return this.usersService.createProfile(user_id, body);
     }
 
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, AdminGuard)
     @Delete(':id')
     @ApiOkResponse({ description: 'Operation result' })
     async deleteUser(@Param('id') id: number) {
