@@ -6,6 +6,7 @@ import { ProfileDTO, UserDTO, UserPatchDTO } from "./users.dto";
 import { HasherService } from "src/hasher/hasher.service";
 import { Profile } from "./entities/profiles.entity";
 import { DeleteResult } from "typeorm/browser";
+import { throws } from "assert";
 
 @Injectable()
 export class UsersService {
@@ -72,6 +73,27 @@ export class UsersService {
         user.email = new_data.email;
         user.password_hash = await this.hasherService.getHash(new_data.password);
         user.role = new_data.role;
+
+        return this.userRepository.save(user);
+    }
+
+    async updateProfile(user_id: number, new_data: ProfileDTO) {
+        const user = await this.userRepository.findOne({
+            where: { id: user_id },
+            relations: {
+                profile: true
+            }
+        })
+
+        if (!user)
+            throw new HttpException('No such user exists', HttpStatus.NOT_FOUND);
+
+        if (!user.profile) {
+            user.profile = this.profileRepository.create(new_data);
+        } else {
+            const id = user.profile.id;
+            user.profile = { id, ...new_data };
+        }
 
         return this.userRepository.save(user);
     }

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { ProfileDTO, UserDTO, UserPatchDTO } from "./users.dto";
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse } from "@nestjs/swagger";
@@ -41,9 +41,20 @@ export class UsersController {
     }
 
     @UseGuards(AuthGuard, AdminGuard)
+    @UsePipes(ValidationPipe)
     @Patch(':id')
-    async patchUser(@Param('id') id: number, @Body() body: UserPatchDTO) {
+    patchUser(@Param('id') id: number, @Body() body: UserPatchDTO) {
         return this.usersService.update(id, body);
+    }
+
+    @UseGuards(AuthGuard, AdminGuard)
+    @UsePipes(ValidationPipe)
+    @Put(':id/profile')
+    putProfile(
+        @Param('id') user_id: number,
+        @Body() body: ProfileDTO
+    ) {
+        return this.usersService.updateProfile(user_id, body);
     }
 
     @UseGuards(AuthGuard, AdminGuard)
