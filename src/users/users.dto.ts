@@ -35,13 +35,7 @@ export class UserDTO {
     email!: string;
 }
 
-export class UserPatchDTO {
-    @ApiProperty({
-        default: 'admin'
-    })
-    @IsIn(['user', 'admin'])
-    role!: string;
-
+export class UserPatchSelfDTO {
     @ApiProperty({
         default: 'Password1'
     })
@@ -59,6 +53,14 @@ export class UserPatchDTO {
     })
     @IsEmail()
     email!: string;
+}
+
+export class UserPatchDTO extends UserPatchSelfDTO {
+    @ApiProperty({
+        default: 'admin'
+    })
+    @IsIn(['user', 'admin'])
+    role!: string;
 }
 
 export class ProfileDTO {
