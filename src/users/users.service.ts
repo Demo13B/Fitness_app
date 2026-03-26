@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, HttpException, Injectable, NotFoundException, HttpStatus } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./entities/users.entity";
 import { Repository } from "typeorm";
-import { ProfileDTO, UserDTO } from "./users.dto";
+import { ProfileDTO, UserDTO, UserPatchDTO } from "./users.dto";
 import { HasherService } from "src/hasher/hasher.service";
 import { Profile } from "./entities/profiles.entity";
 import { DeleteResult } from "typeorm/browser";
@@ -60,6 +60,18 @@ export class UsersService {
 
         const newProfile = this.profileRepository.create(profile);
         user.profile = newProfile;
+
+        return this.userRepository.save(user);
+    }
+
+    async update(user_id: number, new_data: UserPatchDTO) {
+        const user = await this.userRepository.findOneBy({ id: user_id });
+        if (!user)
+            throw new HttpException('No such user exists', HttpStatus.NOT_FOUND);
+
+        user.email = new_data.email;
+        user.password_hash = await this.hasherService.getHash(new_data.password);
+        user.role = new_data.role;
 
         return this.userRepository.save(user);
     }
