@@ -1,8 +1,7 @@
-import { Controller, Post, Body, HttpException, HttpStatus, UsePipes, ValidationPipe, Res, Req, UseGuards } from "@nestjs/common";
-import { UserDTO } from "src/users/users.dto";
+import { Controller, Post, Body, UsePipes, ValidationPipe, Res, Req, UseGuards } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiUnauthorizedResponse } from "@nestjs/swagger";
-import { LoginDTO, RegisterDTO } from "./auth.dto";
+import { LoginDTO, RegisterDTO } from "./dto/auth.dto";
 import type { Request, Response } from "express";
 import { RefreshGuard } from "../guards/refresh.guard";
 
