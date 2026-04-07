@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { ExercisesService } from "./exercises.service";
 import { AuthGuard } from "src/guards/auth.guard";
 import { ExerciseDTO } from "./dto/exercise.dto";
@@ -28,6 +28,13 @@ export class ExercisesController {
     @Post()
     async postExercise(@Body() body: ExerciseDTO) {
         const ex = await this.exercisesService.create(body);
+        return this.exerciseMapper.toResponse(ex);
+    }
+
+    @UsePipes(ValidationPipe)
+    @Put(':id')
+    async putExercise(@Param('id') exercise_id: number, @Body() body: ExerciseDTO) {
+        const ex = await this.exercisesService.update(exercise_id, body);
         return this.exerciseMapper.toResponse(ex);
     }
 }
