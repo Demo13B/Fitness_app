@@ -6,6 +6,7 @@ import { ExerciseMuscle } from "./entities/exercise_muscle.entity";
 import { ExercisesController } from "./exercises.controller";
 import { ExercisesService } from "./exercises.service";
 import { GuardsModule } from "src/guards/guards.module";
+import { ExerciseMapper } from "./mappers/exercises.mapper";
 
 @Module({
     imports: [
@@ -13,6 +14,6 @@ import { GuardsModule } from "src/guards/guards.module";
         GuardsModule
     ],
     controllers: [ExercisesController],
-    providers: [ExercisesService]
+    providers: [ExercisesService, ExerciseMapper]
 })
 export class ExercisesModule { }
