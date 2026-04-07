@@ -90,4 +90,8 @@ export class ExercisesService {
 
         return this.exerciseRepository.save(exercise);
     }
+
+    async delete(exercise_id: number) {
+        return this.exerciseRepository.delete({ id: exercise_id });
+    }
 }
