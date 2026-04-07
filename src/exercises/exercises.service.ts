@@ -36,6 +36,23 @@ export class ExercisesService {
         });
     }
 
+    readById(exercise_id: number) {
+        return this.exerciseRepository.findOne({
+            where: { id: exercise_id },
+            relations: {
+                muscle_groups: {
+                    muscle: true
+                }
+            },
+            order: {
+                id: 'ASC',
+                muscle_groups: {
+                    muscle_id: 'ASC'
+                }
+            }
+        })
+    }
+
     async create(exercise: ExerciseDTO) {
         const newExercise = this.exerciseRepository.create({
             name: exercise.name,
