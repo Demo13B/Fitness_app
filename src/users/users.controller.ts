@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Put, Req, Res, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { UsersService } from "./users.service";
-import { ProfileDTO, UserDTO, UserPatchDTO, UserPatchSelfDTO } from "./users.dto";
+import { UserDTO, UserPatchDTO, UserPatchSelfDTO } from "./dto/users.dto";
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { AuthGuard } from "src/guards/auth.guard";
 import { AdminGuard } from "src/guards/admin.guard";
@@ -51,33 +51,6 @@ export class UsersController {
         return this.usersService.create(body);
     }
 
-    @UseGuards(AuthGuard)
-    @UsePipes(ValidationPipe)
-    @Post('self/profile')
-    @ApiCreatedResponse({ description: 'Self updated user data' })
-    @ApiBadRequestResponse({ description: 'Validation errors or profile already exists' })
-    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
-    postSelfProfile(
-        @Req() req: RequestWithUser,
-        @Body() body: ProfileDTO
-    ) {
-        return this.usersService.createProfile(req.user.user_id, body);
-    }
-
-    @UseGuards(AuthGuard, AdminGuard)
-    @UsePipes(ValidationPipe)
-    @Post(':id/profile')
-    @ApiOkResponse({ description: 'Created profile data' })
-    @ApiNotFoundResponse({ description: 'User does not exist' })
-    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
-    @ApiForbiddenResponse({ description: 'Access rights mismatch' })
-    @ApiBadRequestResponse({ description: 'Validation errors or user already has profile' })
-    postProfile(
-        @Param('id') user_id: number,
-        @Body() body: ProfileDTO
-    ) {
-        return this.usersService.createProfile(user_id, body);
-    }
 
     @UseGuards(AuthGuard)
     @UsePipes(ValidationPipe)
@@ -102,35 +75,6 @@ export class UsersController {
     @ApiNotFoundResponse({ description: 'User not found' })
     patchUser(@Param('id') id: number, @Body() body: UserPatchDTO) {
         return this.usersService.update(id, body);
-    }
-
-    @UseGuards(AuthGuard)
-    @UsePipes(ValidationPipe)
-    @Put('self/profile')
-    @ApiOkResponse({ description: 'Seld updated user data' })
-    @ApiBadRequestResponse({ description: 'Validation failed' })
-    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
-    @ApiForbiddenResponse({ description: 'Access rights mismatch' })
-    putSelfProfile(
-        @Req() req: RequestWithUser,
-        @Body() body: ProfileDTO
-    ) {
-        return this.usersService.updateProfile(req.user.user_id, body);
-    }
-
-    @UseGuards(AuthGuard, AdminGuard)
-    @UsePipes(ValidationPipe)
-    @Put(':id/profile')
-    @ApiOkResponse({ description: 'Updated requested user data' })
-    @ApiNotFoundResponse({ description: 'User does not exist' })
-    @ApiUnauthorizedResponse({ description: 'Authorization failed' })
-    @ApiForbiddenResponse({ description: 'Access rights mismatch' })
-    @ApiBadRequestResponse({ description: 'Validation errors' })
-    putProfile(
-        @Param('id') user_id: number,
-        @Body() body: ProfileDTO
-    ) {
-        return this.usersService.updateProfile(user_id, body);
     }
 
     @UseGuards(AuthGuard)
