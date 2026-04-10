@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { AssessmentLog } from "src/assessment/entity/assessment_log.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: 'users' })
 export class User {
@@ -34,4 +35,7 @@ export class User {
 
     @Column({ type: 'text', nullable: false })
     medical_record!: string
+
+    @OneToMany(() => AssessmentLog, (log) => log.user)
+    assessment_logs!: AssessmentLog[]
 }
