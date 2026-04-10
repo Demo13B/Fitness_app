@@ -7,6 +7,15 @@ export class AssessmentLog {
     id!: number;
 
     @Column({ type: 'float', nullable: false })
+    bmi!: number;
+
+    @Column({ type: 'float', nullable: false })
+    vo2_max!: number;
+
+    @Column({ type: 'float', nullable: false })
+    rm1!: number;
+
+    @Column({ type: 'float', nullable: false })
     body_score!: number;
 
     @Column({ type: 'float', nullable: false })
@@ -17,6 +26,9 @@ export class AssessmentLog {
 
     @Column({ type: 'float', nullable: false })
     total_score!: number;
+
+    @Column({ type: 'timestamp', nullable: false })
+    logged_at!: Date;
 
     @ManyToOne(() => User, (user) => user.assessment_logs)
     @JoinColumn({ name: 'user_id' })
