@@ -132,4 +132,93 @@ export class AssessmentService {
 
         return this.assessmentRepository.save(assessment_log);
     }
+
+    async readByUserId(user_id: number) {
+        const user = await this.userRepository.findOne({
+            where: { id: user_id },
+            relations: {
+                assessment_logs: true
+            },
+            order: {
+                assessment_logs: {
+                    logged_at: 'DESC'
+                }
+            }
+        });
+
+        if (!user)
+            throw new HttpException('No such user', HttpStatus.NOT_FOUND);
+
+        return user.assessment_logs[0];
+    }
+
+    async readLastTwo(user_id: number) {
+        const user = await this.userRepository.findOne({
+            where: { id: user_id },
+            relations: {
+                assessment_logs: true
+            },
+            order: {
+                assessment_logs: {
+                    logged_at: 'DESC'
+                }
+            }
+        });
+
+        if (!user)
+            throw new HttpException('No such user', HttpStatus.NOT_FOUND);
+
+        const logs = user.assessment_logs.slice(0, 2);
+
+        const body_change = (logs[0].body_score - logs[1].body_score) / logs[1].body_score * 100;
+        const cardio_change = (logs[0].cardio_score - logs[1].cardio_score) / logs[1].cardio_score * 100;
+        const strength_change = (logs[0].strength_score - logs[1].strength_score) / logs[1].strength_score * 100;
+        const total_change = (logs[0].total_score - logs[1].total_score) / logs[1].total_score * 100;
+
+        const trendResults = {
+            body_change,
+            cardio_change,
+            strength_change,
+            total_change,
+            date: logs[0].logged_at
+        }
+
+        return trendResults;
+    }
+
+    async readOverall(user_id: number) {
+        const user = await this.userRepository.findOne({
+            where: { id: user_id },
+            relations: {
+                assessment_logs: true
+            },
+            order: {
+                assessment_logs: {
+                    logged_at: 'DESC'
+                }
+            }
+        });
+
+        if (!user)
+            throw new HttpException('No such user', HttpStatus.NOT_FOUND);
+
+        const logs: AssessmentLog[] = [];
+        logs.push(user.assessment_logs[0]);
+        logs.push(user.assessment_logs[user.assessment_logs.length - 1]);
+
+        const body_change = (logs[0].body_score - logs[1].body_score) / logs[1].body_score * 100;
+        const cardio_change = (logs[0].cardio_score - logs[1].cardio_score) / logs[1].cardio_score * 100;
+        const strength_change = (logs[0].strength_score - logs[1].strength_score) / logs[1].strength_score * 100;
+        const total_change = (logs[0].total_score - logs[1].total_score) / logs[1].total_score * 100;
+
+        const trendResults = {
+            body_change,
+            cardio_change,
+            strength_change,
+            total_change,
+            date: logs[0].logged_at
+        }
+
+        return trendResults;
+    }
 }
