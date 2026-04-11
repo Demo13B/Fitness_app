@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, UsePipes, ValidationPipe } from "@nestjs/common";
 import { AssessmentService } from "./assessment.service";
 import { AssessmentInputDTO } from "./dto/assessment_input.dto";
 
@@ -27,5 +27,11 @@ export class AssessmentController {
     @Get('overall/:user_id')
     getOverallLog(@Param('user_id') user_id: number) {
         return this.assessmentService.readOverall(user_id);
+    }
+
+    @Delete(':assessment_id')
+    async deleteAssessment(@Param('assessment_id') assessment_id: number) {
+        const result = await this.assessmentService.delete(assessment_id);
+        return { deleted: result.affected }
     }
 }

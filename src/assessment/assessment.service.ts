@@ -170,10 +170,10 @@ export class AssessmentService {
 
         const logs = user.assessment_logs.slice(0, 2);
 
-        const body_change = (logs[0].body_score - logs[1].body_score) / logs[1].body_score * 100;
-        const cardio_change = (logs[0].cardio_score - logs[1].cardio_score) / logs[1].cardio_score * 100;
-        const strength_change = (logs[0].strength_score - logs[1].strength_score) / logs[1].strength_score * 100;
-        const total_change = (logs[0].total_score - logs[1].total_score) / logs[1].total_score * 100;
+        const body_change = (logs[0].body_score - logs[1].body_score) * 100;
+        const cardio_change = (logs[0].cardio_score - logs[1].cardio_score) * 100;
+        const strength_change = (logs[0].strength_score - logs[1].strength_score) * 100;
+        const total_change = logs[0].total_score - logs[1].total_score;
 
         const trendResults = {
             body_change,
@@ -206,10 +206,10 @@ export class AssessmentService {
         logs.push(user.assessment_logs[0]);
         logs.push(user.assessment_logs[user.assessment_logs.length - 1]);
 
-        const body_change = (logs[0].body_score - logs[1].body_score) / logs[1].body_score * 100;
-        const cardio_change = (logs[0].cardio_score - logs[1].cardio_score) / logs[1].cardio_score * 100;
-        const strength_change = (logs[0].strength_score - logs[1].strength_score) / logs[1].strength_score * 100;
-        const total_change = (logs[0].total_score - logs[1].total_score) / logs[1].total_score * 100;
+        const body_change = (logs[0].body_score - logs[1].body_score) * 100;
+        const cardio_change = (logs[0].cardio_score - logs[1].cardio_score) * 100;
+        const strength_change = (logs[0].strength_score - logs[1].strength_score) * 100;
+        const total_change = logs[0].total_score - logs[1].total_score;
 
         const trendResults = {
             body_change,
@@ -220,5 +220,9 @@ export class AssessmentService {
         }
 
         return trendResults;
+    }
+
+    delete(assessment_id: number) {
+        return this.assessmentRepository.delete({ id: assessment_id });
     }
 }

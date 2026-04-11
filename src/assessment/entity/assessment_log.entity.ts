@@ -30,7 +30,9 @@ export class AssessmentLog {
     @Column({ type: 'timestamp', nullable: false })
     logged_at!: Date;
 
-    @ManyToOne(() => User, (user) => user.assessment_logs)
+    @ManyToOne(() => User, (user) => user.assessment_logs, {
+        onDelete: 'CASCADE'
+    })
     @JoinColumn({ name: 'user_id' })
     user!: User;
 }
