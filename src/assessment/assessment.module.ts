@@ -5,9 +5,13 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { AssessmentLog } from "./entity/assessment_log.entity";
 import { User } from "src/users/entities/users.entity";
 import { CooperReference } from "./entity/cooper_reference.entity";
+import { GuardsModule } from "src/guards/guards.module";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([AssessmentLog, User, CooperReference])],
+    imports: [
+        TypeOrmModule.forFeature([AssessmentLog, User, CooperReference]),
+        GuardsModule
+    ],
     controllers: [AssessmentController],
     providers: [AssessmentService]
 })
