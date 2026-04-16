@@ -2,9 +2,9 @@ import { Module } from "@nestjs/common";
 import { AssessmentController } from "./assessment.controller";
 import { AssessmentService } from "./assessment.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { AssessmentLog } from "./entity/assessment_log.entity";
+import { AssessmentLog } from "./entities/assessment_log.entity";
 import { User } from "src/users/entities/users.entity";
-import { CooperReference } from "./entity/cooper_reference.entity";
+import { CooperReference } from "./entities/cooper_reference.entity";
 import { GuardsModule } from "src/guards/guards.module";
 
 @Module({
