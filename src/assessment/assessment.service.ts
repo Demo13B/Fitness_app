@@ -55,7 +55,7 @@ export class AssessmentService {
     }
 
     private bodyScore(bmi: number, bmi_i: number, bmi_t: number) {
-        return 1 - Math.abs(bmi - bmi_i) / bmi_t
+        return this.clamp(1 - Math.abs(bmi - bmi_i) / bmi_t, 0, 1);
     }
 
     private async cardioScore(vo2: number, gender: string, age: number) {
