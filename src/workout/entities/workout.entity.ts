@@ -1,6 +1,5 @@
-import { Exercise } from "src/exercises/entities/exercise.entity";
 import { User } from "src/users/entities/users.entity";
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { WorkoutExercise } from "./workout_exercise.entity";
 
 @Entity({ name: 'workouts' })
@@ -17,6 +16,6 @@ export class Workout {
     @JoinColumn({ name: 'user_id' })
     user!: User;
 
-    @OneToMany(() => WorkoutExercise, (wex) => wex.workout)
+    @OneToMany(() => WorkoutExercise, (wex) => wex.workout, { cascade: true })
     workout_exercises!: WorkoutExercise[]
 }
