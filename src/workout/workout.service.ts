@@ -61,4 +61,8 @@ export class WorkoutService {
 
         return this, this.workoutRepository.save(workout);
     }
+
+    delete(workout_id: number) {
+        return this.workoutRepository.delete({ id: workout_id });
+    }
 }
