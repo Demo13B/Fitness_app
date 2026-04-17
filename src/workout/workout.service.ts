@@ -28,6 +28,69 @@ export class WorkoutService {
         });
     }
 
+    async calculateLastBalance(user_id: number, date_raw: Date) {
+        const user = await this.userRepository.findOne({
+            where: { id: user_id },
+            relations: {
+                workouts: {
+                    workout_exercises: {
+                        exercise: {
+                            muscle_groups: {
+                                muscle: true
+                            }
+                        }
+                    }
+                }
+            },
+            order: {
+                workouts: {
+                    date: 'DESC'
+                }
+            }
+        });
+
+        if (!user)
+            throw new HttpException('No such user', HttpStatus.NOT_FOUND);
+
+        let workout: Workout;
+        const date = new Date(date_raw);
+        if (!date_raw) {
+            workout = user.workouts[0];
+        } else {
+            workout = user.workouts.filter((value) => {
+                return value.date.getFullYear() === date.getFullYear() &&
+                    value.date.getMonth() === date.getMonth() &&
+                    value.date.getDate() === date.getDate()
+            })[0];
+            if (!workout)
+                throw new HttpException('No training on that date', HttpStatus.NOT_FOUND);
+        }
+
+        const load: Record<string, number> = {};
+
+        for (let exercise of workout.workout_exercises) {
+            for (let mg of exercise.exercise.muscle_groups) {
+                if (!load[mg.muscle.name])
+                    load[mg.muscle.name] = 0;
+
+                load[mg.muscle.name] += exercise.sets * mg.coefficient;
+            }
+        }
+
+        const total_load = Object.values(load).reduce((acc, value) => acc + value, 0);
+        const size = Object.keys(load).length;
+        const denom = total_load / size;
+
+        const imb_index = Object.entries(load).map(([muscle, value]) => {
+            return {
+                muscle: muscle,
+                imbalance: value / denom - 1
+            };
+        });
+
+        return imb_index;
+    }
+
     async addWorkout(user_id: number, workout_data: WorkoutInputDTO) {
         const user = await this.userRepository.findOneBy({ id: user_id });
         if (!user)
