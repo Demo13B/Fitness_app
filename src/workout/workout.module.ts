@@ -6,9 +6,13 @@ import { Workout } from "./entities/workout.entity";
 import { WorkoutExercise } from "./entities/workout_exercise.entity";
 import { User } from "src/users/entities/users.entity";
 import { Exercise } from "src/exercises/entities/exercise.entity";
+import { GuardsModule } from "src/guards/guards.module";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Workout, WorkoutExercise, User, Exercise])],
+    imports: [
+        TypeOrmModule.forFeature([Workout, WorkoutExercise, User, Exercise]),
+        GuardsModule
+    ],
     controllers: [WorkoutController],
     providers: [WorkoutService]
 })
