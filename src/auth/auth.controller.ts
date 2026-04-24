@@ -25,13 +25,11 @@ export class AuthController {
         const tokens = await this.authService.login(body);
         res.cookie('access_token', tokens.access_token, {
             httpOnly: true,
-            sameSite: 'strict',
-            secure: true
+            sameSite: 'strict'
         });
         res.cookie('refresh_token', tokens.refresh_token, {
             httpOnly: true,
-            sameSite: 'strict',
-            secure: true
+            sameSite: 'strict'
         });
 
         return tokens;
@@ -45,13 +43,11 @@ export class AuthController {
         const tokens = await this.authService.refresh(req.cookies.refresh_token);
         res.cookie('access_token', tokens.new_access_token, {
             httpOnly: true,
-            sameSite: 'strict',
-            secure: true
+            sameSite: 'strict'
         });
         res.cookie('refresh_token', tokens.new_refresh_token, {
             httpOnly: true,
-            sameSite: 'strict',
-            secure: true
+            sameSite: 'strict'
         });
 
         return tokens;
