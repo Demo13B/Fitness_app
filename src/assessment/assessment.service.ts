@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { AssessmentInputDTO } from "./dto/assessment_input.dto";
 import { InjectRepository } from "@nestjs/typeorm";
-import { AssessmentLog } from "./entity/assessment_log.entity";
+import { AssessmentLog } from "./entities/assessment_log.entity";
 import { LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
 import { User } from "src/users/entities/users.entity";
-import { CooperReference } from "./entity/cooper_reference.entity";
+import { CooperReference } from "./entities/cooper_reference.entity";
 
 @Injectable()
 export class AssessmentService {
@@ -55,7 +55,7 @@ export class AssessmentService {
     }
 
     private bodyScore(bmi: number, bmi_i: number, bmi_t: number) {
-        return 1 - Math.abs(bmi - bmi_i) / bmi_t
+        return this.clamp(1 - Math.abs(bmi - bmi_i) / bmi_t, 0, 1);
     }
 
     private async cardioScore(vo2: number, gender: string, age: number) {

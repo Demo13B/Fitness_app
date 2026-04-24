@@ -1,4 +1,5 @@
-import { AssessmentLog } from "src/assessment/entity/assessment_log.entity";
+import { AssessmentLog } from "src/assessment/entities/assessment_log.entity";
+import { Workout } from "src/workout/entities/workout.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: 'users' })
@@ -38,4 +39,7 @@ export class User {
 
     @OneToMany(() => AssessmentLog, (log) => log.user)
     assessment_logs!: AssessmentLog[]
+
+    @OneToMany(() => Workout, (workout) => workout.user)
+    workouts!: Workout[]
 }
