@@ -28,7 +28,7 @@ export class WorkoutService {
         });
     }
 
-    async calculateLastBalance(user_id: number, date_raw: Date) {
+    async calculateBalance(user_id: number, date_raw: Date) {
         const user = await this.userRepository.findOne({
             where: { id: user_id },
             relations: {

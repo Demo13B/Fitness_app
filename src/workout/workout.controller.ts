@@ -41,7 +41,7 @@ export class WorkoutController {
     @ApiForbiddenResponse({ description: 'Access rights mismatch' })
     @ApiNotFoundResponse({ description: 'User or workout not found' })
     getWorkoutBalance(@Param('user_id') user_id: number, @Query('date') date: Date) {
-        return this.workoutService.calculateLastBalance(user_id, date);
+        return this.workoutService.calculateBalance(user_id, date);
     }
 
     @UseGuards(AuthGuard, AdminGuard)
