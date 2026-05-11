@@ -25,10 +25,10 @@ export class User {
     @Column({ nullable: false })
     gender!: string;
 
-    @Column({ nullable: false })
+    @Column({ type: 'float', nullable: false })
     height!: number;
 
-    @Column({ nullable: false })
+    @Column({ type: 'float', nullable: false })
     weight!: number;
 
     @Column({ type: 'timestamp', nullable: false })
