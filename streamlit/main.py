@@ -189,32 +189,36 @@ def profile_page():
     st.session_state.profile = load_self_profile()
     profile = st.session_state.profile
 
-    if profile:
-        gender_map = {
-            "male": "Мужчина",
-            "female": "Женщина",
-        }
+    tab_profile, tab_change, tab_delete = st.tabs(
+        ['Профиль', 'Обновить', 'Удалить'])
 
-        st.title("Профиль")
+    with tab_profile:
+        if profile:
+            gender_map = {
+                "male": "Мужчина",
+                "female": "Женщина",
+            }
 
-        c1, c2 = st.columns(2)
-        c1.metric("Логин", profile.get("username", "—"))
-        c2.metric("Email", profile.get("email", "—"))
+            st.title("Профиль")
 
-        c3, c4 = st.columns(2)
-        c3.metric("Пол", gender_map.get(profile.get(
-            "gender"), profile.get("gender", "—")))
-        c4.metric("Дата рождения", str(profile.get("birth_date", "—"))[:10])
+            c1, c2 = st.columns(2)
+            c1.metric("Логин", profile.get("username", "—"))
+            c2.metric("Email", profile.get("email", "—"))
 
-        c5, c6 = st.columns(2)
-        c5.metric("Рост", f"{profile.get('height', '—')} см")
-        c6.metric("Вес", f"{profile.get('weight', '—')} кг")
+            c3, c4 = st.columns(2)
+            c3.metric("Пол", gender_map.get(profile.get(
+                "gender"), profile.get("gender", "—")))
+            c4.metric("Дата рождения", str(
+                profile.get("birth_date", "—"))[:10])
 
-        st.metric('Медицинские данные',
-                  f"{profile.get('medical_record', '-')}")
+            c5, c6 = st.columns(2)
+            c5.metric("Рост", f"{profile.get('height', '—')} см")
+            c6.metric("Вес", f"{profile.get('weight', '—')} кг")
 
-        st.divider()
+            st.metric('Медицинские данные',
+                      f"{profile.get('medical_record', '-')}")
 
+    with tab_change:
         st.title('Обновить данные')
 
         email = profile.get("email", "")
@@ -272,13 +276,11 @@ def profile_page():
             if update_self_profile(payload):
                 st.rerun()
 
-        st.divider()
+    with tab_delete:
         st.warning("Удаление аккаунта необратимо.")
         confirm_delete = st.checkbox("Я понимаю, что данные будут удалены")
         if st.button("Удалить мой аккаунт", disabled=not confirm_delete):
             delete_self_profile()
-    else:
-        st.info("Нажмите «Загрузить данные», чтобы получить профиль через /users/self.")
 
 
 def assessment_page():
