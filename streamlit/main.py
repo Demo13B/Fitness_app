@@ -215,6 +215,8 @@ def profile_page():
 
         st.divider()
 
+        st.title('Обновить данные')
+
         email = profile.get("email", "")
         gender = profile.get("gender", "male")
         height = profile.get("height", 0.0)
@@ -283,8 +285,26 @@ def assessment_page():
     st.title('Общая оценка')
     api_url = st.session_state.api_url
 
-    tab_create, tab_overall, tab_trend = st.tabs(
-        ['Добавить запись', 'Общий прогресс', 'Тренд'])
+    tab_last, tab_overall, tab_create, tab_trend = st.tabs(
+        ['Результаты последних измерений', 'Прогресс', 'Добавить запись', 'Тренд'])
+
+    with tab_last:
+        response = safe_request(
+            'GET',
+            st.session_state.api_url,
+            f"/assessment/{st.session_state.profile['id']}"
+        )
+        if response is not None:
+            if response.status_code in (200, 201):
+                data = response.json()
+                st.markdown('#### Результаты оценки')
+                st.metric('BMI', f"{data['bmi']:.2f}")
+                st.metric('VO2max', f"{data['vo2_max']:.2f}")
+                st.metric('1RM', f"{data['rm1']:.2f}")
+                st.metric('Total score', f"{data['total_score']:.2f}")
+            else:
+                st.error(f"Ошибка: {response.status_code}")
+                st.code(response.text)
 
     with tab_create:
         with st.form("register_form", clear_on_submit=False):
@@ -341,8 +361,49 @@ def assessment_page():
                         st.metric('Total score', f"{data['total_score']:.2f}")
 
                     else:
-                        st.error(f"Ошибка входа: {response.status_code}")
+                        st.error(f"Ошибка: {response.status_code}")
                         st.code(response.text)
+
+    with tab_overall:
+        response = safe_request(
+            'GET',
+            st.session_state.api_url,
+            f"/assessment/overall/{st.session_state.profile['id']}"
+        )
+        if response is not None:
+            if response.status_code in (200, 201):
+                overall = response.json()
+            else:
+                st.error(f"Ошибка: {response.status_code}")
+                st.code(response.text)
+
+        response = safe_request(
+            'GET',
+            st.session_state.api_url,
+            f"/assessment/trend/{st.session_state.profile['id']}"
+        )
+        if response is not None:
+            if response.status_code in (200, 201):
+                trend = response.json()
+            else:
+                st.error(f"Ошибка: {response.status_code}")
+                st.code(response.text)
+
+        col_trend, col_overall = st.columns([1, 1])
+
+        with col_trend:
+            st.markdown('#### Тренд')
+            st.metric('Физиология', f"{trend['body_change']:.2f}")
+            st.metric('Кардиовыносливость', f"{trend['cardio_change']:.2f}")
+            st.metric('Сила', f"{trend['strength_change']:.2f}")
+            st.metric('Общая оценка', f"{trend['total_change']:.2f}")
+
+        with col_overall:
+            st.markdown('#### Все время')
+            st.metric('Физиология', f"{overall['body_change']:.2f}")
+            st.metric('Кардиовыносливость', f"{overall['cardio_change']:.2f}")
+            st.metric('Сила', f"{overall['strength_change']:.2f}")
+            st.metric('Общая оценка', f"{overall['total_change']:.2f}")
 
 
 def main_page():
