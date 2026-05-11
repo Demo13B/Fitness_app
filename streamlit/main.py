@@ -1,6 +1,6 @@
 import requests
 import streamlit as st
-from datetime import date
+from datetime import date, datetime
 
 st.set_page_config(page_title="FitControl Demo",
                    page_icon="🏋️", layout="centered")
@@ -8,55 +8,83 @@ st.set_page_config(page_title="FitControl Demo",
 DEFAULT_API_URL = "http://localhost:8080"
 
 
-def api_post(base_url: str, path: str, payload: dict):
-    url = base_url.rstrip("/") + path
-    try:
-        return requests.post(url, json=payload, timeout=10)
-    except requests.RequestException as e:
-        return None, str(e)
-
-
 def init_state():
     if "auth" not in st.session_state:
         st.session_state.auth = False
-    if "token" not in st.session_state:
-        st.session_state.token = ""
     if "user" not in st.session_state:
         st.session_state.user = None
     if "api_url" not in st.session_state:
         st.session_state.api_url = DEFAULT_API_URL
+    if "profile" not in st.session_state:
+        st.session_state.profile = None
+    if "http" not in st.session_state:
+        st.session_state.http = requests.Session()
 
 
 def logout():
     st.session_state.auth = False
-    st.session_state.token = ""
     st.session_state.user = None
+    st.session_state.profile = None
+    st.session_state.http.cookies.clear()
+
+
+def safe_request(method, base_url: str, path: str, payload=None):
+    url = base_url.rstrip("/") + path
+    try:
+        response = st.session_state.http.request(
+            method=method,
+            url=url,
+            json=payload,
+            timeout=10,
+        )
+        return response
+    except requests.RequestException as e:
+        st.error(f"Ошибка соединения: {e}")
+        return None
+
+
+def parse_date(value):
+    if not value:
+        return date.today()
+    if isinstance(value, date):
+        return value
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00")).date()
+    except Exception:
+        try:
+            return date.fromisoformat(str(value)[:10])
+        except Exception:
+            return date.today()
 
 
 def auth_page():
     st.title("FitControl")
-
     api_url = st.session_state.api_url
 
-    tab_reg, tab_login = st.tabs(["Регистрация", "Вход"])
+    tab_login, tab_reg = st.tabs(["Вход", 'Регистрация'])
 
     with tab_reg:
         options = {
-            'Мужчина': 'male',
-            'Женщина': 'female'
+            "Мужчина": "male",
+            "Женщина": "female",
         }
 
         with st.form("register_form", clear_on_submit=False):
             username = st.text_input("Логин")
             password = st.text_input("Пароль", type="password")
             email = st.text_input("Email")
-            gender = st.selectbox('Пол', ['Мужчина', 'Женщина'])
-            height = st.number_input('Рост')
-            weight = st.number_input('Вес')
-            birth_date = st.date_input('Дата рождения', min_value=date(
-                1900, 1, 1), max_value=date.today())
+            gender = st.selectbox("Пол", ["Мужчина", "Женщина"])
+            height = st.number_input("Рост", min_value=0.0, step=1.0)
+            weight = st.number_input("Вес", min_value=0.0, step=1.0)
+            birth_date = st.date_input(
+                "Дата рождения",
+                min_value=date(1900, 1, 1),
+                max_value=date.today(),
+            )
             medical_data = st.text_input(
-                'Медицинские данные (Хронические заболевания, противопоказания)', value='Противопоказания отсутствуют')
+                "Медицинские данные (хронические заболевания, противопоказания)",
+                value="Противопоказания отсутствуют",
+            )
             submit = st.form_submit_button("Зарегистрироваться")
 
         if submit:
@@ -66,26 +94,17 @@ def auth_page():
                 "password": password,
                 "gender": options[gender],
                 "height": height,
-                'weight': weight,
-                'birth_date': birth_date.isoformat(),
-                'medical_record': medical_data
+                "weight": weight,
+                "birth_date": birth_date.isoformat(),
+                "medical_record": medical_data,
             }
-            response = None
-            try:
-                response = requests.post(
-                    api_url.rstrip("/") + "/auth/register",
-                    json=payload,
-                    timeout=10,
-                )
-            except requests.RequestException as e:
-                st.error(f"Ошибка соединения: {e}")
-                return
-
-            if response.status_code in (200, 201):
-                st.success("Регистрация успешна.")
-            else:
-                st.error(f"Ошибка регистрации: {response.status_code}")
-                st.code(response.text)
+            response = safe_request("POST", api_url, "/auth/register", payload)
+            if response is not None:
+                if response.status_code in (200, 201):
+                    st.success("Регистрация успешна.")
+                else:
+                    st.error(f"Ошибка регистрации: {response.status_code}")
+                    st.code(response.text)
 
     with tab_login:
         with st.form("login_form", clear_on_submit=False):
@@ -99,38 +118,173 @@ def auth_page():
                 "username": username,
                 "password": password,
             }
-            try:
-                response = requests.post(
-                    api_url.rstrip("/") + "/auth/login",
-                    json=payload,
-                    timeout=10,
-                )
-            except requests.RequestException as e:
-                st.error(f"Ошибка соединения: {e}")
-                return
+            response = safe_request("POST", api_url, "/auth/login", payload)
+            if response is not None:
+                if response.status_code in (200, 201):
+                    data = response.json() if response.content else {}
+                    st.session_state.auth = True
+                    st.session_state.user = data.get(
+                        "user", {"username": username})
+                    st.success("Вход выполнен.")
+                    st.rerun()
+                else:
+                    st.error(f"Ошибка входа: {response.status_code}")
+                    st.code(response.text)
 
-            if response.status_code in (200, 201):
-                data = response.json() if response.content else {}
-                st.session_state.auth = True
-                st.session_state.token = data.get("access_token", "")
-                st.session_state.user = data.get(
-                    "user", {"username": username})
-                st.success("Вход выполнен.")
-                st.rerun()
-            else:
-                st.error(f"Ошибка входа: {response.status_code}")
-                st.code(response.text)
+
+def load_self_profile():
+    response = safe_request("GET", st.session_state.api_url, "/users/self")
+    if response is None:
+        return None
+    if response.status_code == 200:
+        return response.json()
+    st.error(f"Не удалось загрузить профиль: {response.status_code}")
+    st.code(response.text)
+    return None
+
+
+def update_self_profile(payload):
+    response = safe_request(
+        "PATCH", st.session_state.api_url, "/users/self", payload)
+    if response is None:
+        return False
+    if response.status_code in (200, 201):
+        st.success("Данные обновлены.")
+        try:
+            st.session_state.profile = response.json()
+        except Exception:
+            pass
+        return True
+    st.error(f"Не удалось обновить данные: {response.status_code}")
+    st.code(response.text)
+    return False
+
+
+def delete_self_profile():
+    response = safe_request("DELETE", st.session_state.api_url, "/users/self")
+    if response is None:
+        return False
+    if response.status_code in (200, 204):
+        st.success("Аккаунт удалён.")
+        logout()
+        st.rerun()
+        return True
+    st.error(f"Не удалось удалить аккаунт: {response.status_code}")
+    st.code(response.text)
+    return False
+
+
+def profile_tab():
+    st.session_state.profile = load_self_profile()
+    profile = st.session_state.profile
+
+    if profile:
+        gender_map = {
+            "male": "Мужчина",
+            "female": "Женщина",
+        }
+
+        st.markdown("### Профиль")
+
+        c1, c2 = st.columns(2)
+        c1.metric("Логин", profile.get("username", "—"))
+        c2.metric("Email", profile.get("email", "—"))
+
+        c3, c4 = st.columns(2)
+        c3.metric("Пол", gender_map.get(profile.get(
+            "gender"), profile.get("gender", "—")))
+        c4.metric("Дата рождения", str(profile.get("birth_date", "—"))[:10])
+
+        c5, c6 = st.columns(2)
+        c5.metric("Рост", f"{profile.get('height', '—')} см")
+        c6.metric("Вес", f"{profile.get('weight', '—')} кг")
+
+        st.metric('Медицинские данные',
+                  f"{profile.get('medical_record', '-')}")
+
+        st.divider()
+
+        email = profile.get("email", "")
+        gender = profile.get("gender", "male")
+        height = profile.get("height", 0.0)
+        weight = profile.get("weight", 0.0)
+        birth_date = parse_date(profile.get("birth_date"))
+        medical_record = profile.get("medical_record", "")
+
+        reverse_gender_map = {
+            "Мужчина": "male",
+            "Женщина": "female",
+        }
+
+        with st.form("update_self_form", clear_on_submit=False):
+            new_email = st.text_input("Email", value=email)
+            new_gender = st.selectbox(
+                "Пол",
+                ["Мужчина", "Женщина"],
+                index=0 if gender == "male" else 1,
+            )
+            new_height = st.number_input(
+                "Рост",
+                min_value=0.0,
+                step=1.0,
+                value=float(height or 0),
+            )
+            new_weight = st.number_input(
+                "Вес",
+                min_value=0.0,
+                step=1.0,
+                value=float(weight or 0),
+            )
+            new_birth_date = st.date_input(
+                "Дата рождения",
+                min_value=date(1900, 1, 1),
+                max_value=date.today(),
+                value=birth_date,
+            )
+            new_medical_record = st.text_input(
+                "Медицинские данные",
+                value=medical_record,
+            )
+            save = st.form_submit_button("Сохранить")
+
+        if save:
+            payload = {
+                "email": new_email,
+                "gender": reverse_gender_map[new_gender],
+                "height": new_height,
+                "weight": new_weight,
+                "birth_date": new_birth_date.isoformat(),
+                "medical_record": new_medical_record,
+            }
+            update_self_profile(payload)
+            st.rerun()
+
+        st.divider()
+        st.warning("Удаление аккаунта необратимо.")
+        confirm_delete = st.checkbox("Я понимаю, что данные будут удалены")
+        if st.button("Удалить мой аккаунт", disabled=not confirm_delete):
+            delete_self_profile()
+    else:
+        st.info("Нажмите «Загрузить данные», чтобы получить профиль через /users/self.")
 
 
 def main_page():
-    st.title("Главная")
-    st.write("Заглушка главной страницы после входа.")
+    st.sidebar.title('FitControl')
+    sidebar = st.sidebar.radio(
+        "Меню",
+        ['Главная', "Профиль"],
+        label_visibility='hidden'
+    )
 
-    if st.session_state.user:
-        st.info(
-            f"Пользователь: {st.session_state.user.get('username', 'unknown')}")
+    if sidebar == 'Главная':
+        st.title("Главная")
+        st.write("Добро пожаловать в фитнес приложение FitControl")
 
-    if st.button("Выйти"):
+    if sidebar == 'Профиль':
+        profile_tab()
+
+    btn = st.sidebar.button("Выйти")
+    if btn:
         logout()
         st.rerun()
 
@@ -139,6 +293,7 @@ def main():
     init_state()
 
     if st.session_state.auth:
+        st.set_page_config(layout="wide")
         main_page()
     else:
         auth_page()
