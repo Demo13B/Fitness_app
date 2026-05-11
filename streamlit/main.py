@@ -37,6 +37,17 @@ def safe_request(method, base_url: str, path: str, payload=None):
             json=payload,
             timeout=10,
         )
+
+        if response.status_code == 401:
+            refresh = st.session_state.http.request(
+                method='POST',
+                url=base_url.rstrip('/') + '/auth/refresh',
+                timeout=10
+            )
+            if refresh.status_code in (200, 201):
+                return safe_request(method, base_url, path, payload)
+            else:
+                return refresh
         return response
     except requests.RequestException as e:
         st.error(f"Ошибка соединения: {e}")
