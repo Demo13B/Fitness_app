@@ -185,7 +185,7 @@ def delete_self_profile():
     return False
 
 
-def profile_tab():
+def profile_page():
     st.session_state.profile = load_self_profile()
     profile = st.session_state.profile
 
@@ -195,7 +195,7 @@ def profile_tab():
             "female": "Женщина",
         }
 
-        st.markdown("### Профиль")
+        st.title("Профиль")
 
         c1, c2 = st.columns(2)
         c1.metric("Логин", profile.get("username", "—"))
@@ -279,11 +279,77 @@ def profile_tab():
         st.info("Нажмите «Загрузить данные», чтобы получить профиль через /users/self.")
 
 
+def assessment_page():
+    st.title('Общая оценка')
+    api_url = st.session_state.api_url
+
+    tab_create, tab_overall, tab_trend = st.tabs(
+        ['Добавить запись', 'Общий прогресс', 'Тренд'])
+
+    with tab_create:
+        with st.form("register_form", clear_on_submit=False):
+            st.title('Физиология')
+            weight = st.number_input(
+                'Вес', value=st.session_state.profile['weight'])
+            height = st.number_input(
+                'Рост', value=st.session_state.profile['height'])
+            st.divider()
+
+            st.title('Тест Купера')
+            distance = st.number_input('Пройденное расстояние')
+            st.divider()
+
+            st.title('Тест 1RM')
+            st.markdown('##### Жим лежа')
+            bench_weight = st.number_input('Вес', key='bench_weight')
+            bench_reps = st.number_input(
+                'Количество повторений', key='bench_reps')
+            st.markdown('##### Становая тяга')
+            deadlift_weight = st.number_input('Вес', key='deadlift_weight')
+            deadlift_reps = st.number_input(
+                'Количество повторений', key='deadlift_reps')
+            st.markdown('##### Приседания со штангой')
+            squat_weight = st.number_input('Вес', key='squats_weight')
+            squat_reps = st.number_input(
+                'Количество повторений', key='squats_reps')
+            st.divider()
+
+            submit = st.form_submit_button('Отправить')
+
+            if submit:
+                st.divider()
+                payload = {
+                    "height": height,
+                    "weight": weight,
+                    "cooper_distance": distance,
+                    "bench_weight": bench_weight,
+                    "bench_reps": bench_reps,
+                    "deadlift_weight": deadlift_weight,
+                    "deadlift_reps": deadlift_reps,
+                    "squat_weight": squat_weight,
+                    "squat_reps": squat_reps
+                }
+                response = safe_request(
+                    "POST", api_url, f"/assessment/{st.session_state.profile['id']}", payload)
+                if response is not None:
+                    if response.status_code in (200, 201):
+                        data = response.json()
+                        st.title('Результаты оценки')
+                        st.metric('BMI', f"{data['bmi']:.2f}")
+                        st.metric('VO2max', f"{data['vo2_max']:.2f}")
+                        st.metric('1RM', f"{data['rm1']:.2f}")
+                        st.metric('Total score', f"{data['total_score']:.2f}")
+
+                    else:
+                        st.error(f"Ошибка входа: {response.status_code}")
+                        st.code(response.text)
+
+
 def main_page():
     st.sidebar.title('FitControl')
     sidebar = st.sidebar.radio(
         "Меню",
-        ['Главная', "Профиль"],
+        ['Главная', "Профиль", 'Общая оценка'],
         label_visibility='hidden'
     )
 
@@ -292,7 +358,10 @@ def main_page():
         st.write("Добро пожаловать в фитнес приложение FitControl")
 
     if sidebar == 'Профиль':
-        profile_tab()
+        profile_page()
+
+    if sidebar == 'Общая оценка':
+        assessment_page()
 
     btn = st.sidebar.button("Выйти")
     if btn:
