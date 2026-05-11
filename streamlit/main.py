@@ -267,8 +267,8 @@ def profile_tab():
                 "birth_date": new_birth_date.isoformat(),
                 "medical_record": new_medical_record,
             }
-            update_self_profile(payload)
-            st.rerun()
+            if update_self_profile(payload):
+                st.rerun()
 
         st.divider()
         st.warning("Удаление аккаунта необратимо.")
