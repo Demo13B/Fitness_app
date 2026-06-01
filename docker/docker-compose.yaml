@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:16.4-alpine3.20
+    environment:
+      POSTGRES_DB: "${DB_NAME}"
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - back-tier
+
+  redis:
+    image: redis:8.6-alpine
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    restart: always
+    networks:
+      - back-tier
+  
+  backend:
+    image: demo13b/fitness-back:latest
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    restart: always
+    environment:
+      - APP_PORT=${APP_PORT}
+      - DB_TYPE=${DB_TYPE}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - SYNC=${SYNC}
+    networks:
+      - back-tier
+    depends_on:
+      - postgres
+      - redis
+
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  back-tier:
+    driver: bridge

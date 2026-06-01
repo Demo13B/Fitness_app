@@ -1,0 +1,18 @@
+import { Module } from "@nestjs/common";
+import { AssessmentController } from "./assessment.controller";
+import { AssessmentService } from "./assessment.service";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { AssessmentLog } from "./entities/assessment_log.entity";
+import { User } from "src/users/entities/users.entity";
+import { CooperReference } from "./entities/cooper_reference.entity";
+import { GuardsModule } from "src/guards/guards.module";
+
+@Module({
+    imports: [
+        TypeOrmModule.forFeature([AssessmentLog, User, CooperReference]),
+        GuardsModule
+    ],
+    controllers: [AssessmentController],
+    providers: [AssessmentService]
+})
+export class AssessmentModule { }
